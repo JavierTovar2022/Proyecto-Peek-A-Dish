@@ -38,17 +38,33 @@
         <span class="servicio-precio">$2.00</span>
       </div>
 
-      <div class="servicio-card">
-        <div class="servicio-icon">🎟️</div>
-        <div class="servicio-info">
-          <h3>Cupones</h3>
-          <p>Obtén descuentos exclusivos.</p>
-        </div>
-        <span class="servicio-precio descuento">10% OFF</span>
-      </div>
-
     </div>
+
+    <!-- ===== SECCIÓN CUPONES ===== -->
+    <div class="cupon-section">
+      <div id="cupon-activo" class="cupon-activo" style="display:none;">
+
+        <h3 class="cupon-titulo">🎟️ Cupones — Obtén descuentos exclusivos</h3>
+        <p class="cupon-bienvenida">Ingresa tu código y ve los precios con descuento aplicado:</p>
+
+        <div class="cupon-input-row">
+          <input type="text" id="cupon-input" placeholder="Ej: PEEKA10" />
+          <button onclick="aplicarCupon()">Aplicar</button>
+        </div>
+        <p id="cupon-mensaje" class="cupon-mensaje"></p>
+
+        <div id="cupon-resultado" style="display:none;">
+          <p class="cupon-aplicado-label">✅ Cupón aplicado — <span id="cupon-pct"></span>% de descuento</p>
+          <div class="cupon-platos" id="cupon-platos-lista"></div>
+          <button class="cupon-quitar-btn" onclick="quitarCupon()">Quitar cupón</button>
+        </div>
+
+      </div>
+    </div>
+    <!-- ===== FIN CUPONES ===== -->
+
   </div>
 
+  <script src="js/cupones.js"></script>
 </body>
 </html>
