@@ -368,3 +368,148 @@ img { max-width: 100%; display: block; }
   padding: 0.3rem 0.6rem;
   border-radius: 6px;
 }
+/* ===== FILTER BAR (menú) ===== */
+.filter-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.filter-btn {
+  padding: 4px 12px;
+  font-size: .8rem;
+  border: 1px solid var(--borde);
+  background: var(--card);
+  color: var(--gris);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  transition: background .15s, color .15s;
+}
+.filter-btn.active,
+.filter-btn:hover {
+  background: var(--naranja);
+  color: #fff;
+  border-color: var(--naranja);
+}
+
+/* ===== CUPONES ===== */
+.cupon-section {
+  max-width: 600px;
+  margin: 2rem auto 0;
+}
+.cupon-bloqueado {
+  border: 1px dashed var(--borde);
+  border-radius: 10px;
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--gris);
+  background: var(--card);
+}
+.cupon-lock { font-size: 2rem; display: block; margin-bottom: .5rem; }
+.cupon-bloqueado a { color: var(--naranja); }
+
+.cupon-activo {
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 1.5rem;
+  background: var(--card);
+}
+.cupon-titulo {
+  font-size: 1rem;
+  color: var(--texto);
+  margin-bottom: .5rem;
+}
+.cupon-bienvenida {
+  font-size: .88rem;
+  color: var(--gris);
+  margin-bottom: 1rem;
+}
+.cupon-bienvenida strong { color: var(--texto); }
+
+.cupon-input-row {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: .75rem;
+}
+.cupon-input-row input {
+  flex: 1;
+  padding: .6rem .9rem;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  background: var(--fondo);
+  color: var(--texto);
+  font-size: .9rem;
+  font-family: Arial, sans-serif;
+  outline: none;
+}
+.cupon-input-row input:focus { border-color: var(--naranja); }
+.cupon-input-row input::placeholder { color: var(--gris); }
+.cupon-input-row button {
+  padding: .6rem 1.2rem;
+  background: var(--naranja);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: .88rem;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+}
+.cupon-input-row button:hover { background: #a85208; }
+
+.cupon-mensaje { font-size: .82rem; min-height: 1rem; }
+.cupon-mensaje.error { color: #e74c3c; }
+.cupon-mensaje.ok    { color: #4caf50; }
+
+.cupon-aplicado-label {
+  font-size: .85rem;
+  color: #4caf50;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.cupon-platos {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+.cupon-plato-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .5rem .75rem;
+  background: var(--fondo);
+  border-radius: 6px;
+  border: 1px solid var(--borde);
+  font-size: .85rem;
+}
+.cupon-plato-nombre { color: var(--texto); }
+.cupon-plato-precios { display: flex; gap: .75rem; align-items: center; }
+.precio-original {
+  color: var(--gris);
+  text-decoration: line-through;
+  font-size: .8rem;
+}
+.precio-final {
+  color: var(--naranja);
+  font-weight: bold;
+}
+.cupon-quitar-btn {
+  background: none;
+  border: 1px solid var(--borde);
+  color: var(--gris);
+  padding: .4rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: .8rem;
+  font-family: Arial, sans-serif;
+}
+.cupon-quitar-btn:hover { border-color: var(--gris); color: var(--texto); }
+
+@media (max-width: 600px) {
+  .intro-img { float: none; width: 100%; margin: 0 0 12px; }
+  .footer-block { grid-template-columns: 1fr; }
+  .dish-list { grid-template-columns: 1fr 1fr; }
+}
