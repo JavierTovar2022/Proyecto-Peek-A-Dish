@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Domicilios - Peek a Dish</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ===== DOMICILIOS ===== */
+    .dom-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 20px;
+      align-items: start;
+      margin-top: 20px;
+    }
+    @media (max-width: 800px) {
+      .dom-layout { grid-template-columns: 1fr; }
+    }
+
+    /* Menú de productos */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 12px;
+    }
+    .menu-item {
+      border: 1px solid var(--borde);
+      background: var(--card);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: .85rem;
+      transition: border-color .2s;
+    }
+    .menu-item:hover { border-color: var(--naranja); }
+    .menu-item img {
+      width: 100%;
+      height: 130px;
+      object-fit: cover;
+    }
+    .menu-item-body { padding: 8px 10px; }
+    .menu-item-body h3 { font-size: .88rem; margin-bottom: 3px; color: var(--texto); }
+    .menu-item-body p  { color: var(--gris); font-size: .75rem; margin-bottom: 8px; line-height: 1.4; }
+    .menu-item-footer  { display: flex; justify-content: space-between; align-items: center; }
+    .menu-item-price   { color: var(--naranja); font-weight: bold; font-size: .88rem; }
+    .btn-agregar {
+      background: var(--naranja);
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 4px 10px;
+      font-size: .78rem;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      transition: background .15s;
+    }
+    .btn-agregar:hover { background: #a85208; }
+    .btn-agregar.en-carrito { background: var(--borde); color: var(--gris); }
+
+    /* Panel carrito */
+    .carrito-panel {
+      position: sticky;
+      top: 20px;
+      background: var(--card);
+      border: 1px solid var(--borde);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .carrito-panel h3 {
+      font-size: 1rem;
+      color: var(--texto);
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--borde);
+    }
+    .carrito-vacio {
+      text-align: center;
+      color: var(--gris);
+      font-size: .85rem;
+      padding: 30px 0;
+    }
+    .carrito-items { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .carrito-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--fondo);
+      border-radius: 6px;
+      padding: 6px 10px;
+      border: 1px solid var(--borde);
+      font-size: .82rem;
+    }
+    .carrito-item-nombre { color: var(--texto); flex: 1; }
+    .carrito-item-controles { display: flex; align-items: center; gap: 6px; }
+    .qty-btn {
+      background: var(--borde);
+      color: var(--texto);
+      border: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: .9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+    }
+    .qty-btn:hover { background: var(--naranja); }
+    .qty-num { color: var(--texto); min-width: 18px; text-align: center; font-size: .85rem; }
+    .carrito-item-precio { color: var(--naranja); font-weight: bold; margin-left: 8px; font-size: .82rem; }
+    .carrito-btn-quitar {
+      background: none;
+      border: none;
+      color: var(--gris);
+      cursor: pointer;
+      font-size: .9rem;
+      padding: 0 2px;
+    }
+    .carrito-btn-quitar:hover { color: #e74c3c; }
+
+    .carrito-subtotal {
+      border-top: 1px dashed var(--borde);
+      padding-top: 10px;
+      margin-bottom: 14px;
+    }
+    .carrito-subtotal-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: .85rem;
+      margin-bottom: 4px;
+      color: var(--gris);
+    }
+    .carrito-subtotal-row.total {
+      color: var(--texto);
+      font-weight: bold;
+      font-size: .95rem;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid var(--borde);
+    }
+    .carrito-subtotal-row span:last-child { color: var(--naranja); }
+
+    .btn-pedido {
+      width: 100%;
+      background: var(--naranja);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: .95rem;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+      transition: background .15s;
+    }
+    .btn-pedido:hover { background: #a85208; }
+    .btn-pedido:disabled { background: var(--borde); color: var(--gris); cursor: not-allowed; }
+
+    /* Modal de envío y pago */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-overlay.visible { display: flex; }
+    .modal-box {
+      background: var(--card);
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
+    }
+    .modal-box h2 {
+      font-size: 1.2rem;
+      color: var(--texto);
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--borde);
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+      display: block;
+      font-size: .8rem;
+      color: var(--gris);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: .65rem .9rem;
+      background: var(--fondo);
+      border: 1px solid var(--borde);
+      border-radius: 6px;
+      color: var(--texto);
+      font-size: .9rem;
+      font-family: Arial, sans-serif;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--naranja); }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: var(--gris); }
+    .form-group select option { background: var(--card); }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .pago-opciones {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .pago-opcion {
+      flex: 1;
+      min-width: 100px;
+      border: 1px solid var(--borde);
+      background: var(--fondo);
+      border-radius: 8px;
+      padding: 10px;
+      cursor: pointer;
+      text-align: center;
+      color: var(--gris);
+      font-size: .82rem;
+      transition: all .15s;
+    }
+    .pago-opcion:hover { border-color: var(--naranja); color: var(--texto); }
+    .pago-opcion.selected { border-color: var(--naranja); background: rgba(200,98,10,.12); color: var(--naranja); font-weight: bold; }
+    .pago-opcion .pago-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+
+    .resumen-pedido {
+      background: var(--fondo);
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+      font-size: .83rem;
+    }
+    .resumen-pedido h4 { color: var(--texto); margin-bottom: 8px; font-size: .85rem; }
+    .resumen-item { display: flex; justify-content: space-between; color: var(--gris); margin-bottom: 4px; }
+    .resumen-total { display: flex; justify-content: space-between; color: var(--texto); font-weight: bold; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--borde); }
+    .resumen-total span:last-child { color: var(--naranja); }
+
+    .modal-btns { display: flex; gap: 10px; margin-top: 16px; }
+    .btn-cancelar {
+      flex: 1;
+      padding: 12px;
+      background: var(--fondo);
+      color: var(--gris);
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: .9rem;
+      font-family: Arial, sans-serif;
+    }
+    .btn-cancelar:hover { border-color: var(--gris); color: var(--texto); }
+    .btn-confirmar {
+      flex: 2;
+      padding: 12px;
+      background: var(--naranja);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: .95rem;
+      font-weight: bold;
+      font-family: Arial, sans-serif;
+    }
+    .btn-confirmar:hover { background: #a85208; }
+
+    /* Confirmación */
+    .confirmacion-box {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .confirmacion-icon { font-size: 3rem; margin-bottom: 12px; }
+    .confirmacion-box h2 { font-size: 1.4rem; color: var(--texto); margin-bottom: 8px; }
+    .confirmacion-box p  { color: var(--gris); font-size: .9rem; margin-bottom: 6px; }
+    .confirmacion-box .num-pedido { color: var(--naranja); font-weight: bold; font-size: 1.1rem; }
+    .btn-nuevo-pedido {
+      margin-top: 20px;
+      padding: 12px 24px;
+      background: var(--naranja);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: .95rem;
+      font-weight: bold;
+      font-family: Arial, sans-serif;
+    }
+    .btn-nuevo-pedido:hover { background: #a85208; }
+
+    /* Filtro categorías */
+    .filter-bar { margin-bottom: 14px; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="logo">🍽️ Peek a Dish</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="servicios.html" class="active">Servicios</a></li>
+      <li><a href="registro.html">Registro</a></li>
+      <li><a href="login.html">Login</a></li>
+    </ul>
+  </nav>
+
+  <div class="page">
+    <p class="section-title">🛵 Domicilios — Pide a domicilio</p>
+
+    <div class="dom-layout">
+      <!-- MENÚ -->
+      <div>
+        <div class="filter-bar" id="filtros"></div>
+        <div class="menu-grid" id="menu-grid"></div>
+      </div>
+
+      <!-- CARRITO -->
+      <div class="carrito-panel">
+        <h3>🛒 Tu pedido <span id="carrito-count" style="color:var(--gris);font-weight:normal;font-size:.82rem;"></span></h3>
+        <div id="carrito-vacio" class="carrito-vacio">
+          <div style="font-size:2rem;margin-bottom:8px;">🍽️</div>
+          Agrega platos para comenzar
+        </div>
+        <div id="carrito-items" class="carrito-items" style="display:none;"></div>
+        <div id="carrito-subtotal" class="carrito-subtotal" style="display:none;">
+          <div class="carrito-subtotal-row"><span>Subtotal</span><span id="val-subtotal">$0</span></div>
+          <div class="carrito-subtotal-row"><span>Envío</span><span style="color:#4caf50;">Gratis</span></div>
+          <div class="carrito-subtotal-row total"><span>Total</span><span id="val-total">$0</span></div>
+        </div>
+        <button class="btn-pedido" id="btn-pedir" disabled onclick="abrirModal()">
+          Realizar pedido →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ENVÍO Y PAGO -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-box" id="modal-contenido">
+      <!-- Se rellena por JS -->
+    </div>
+  </div>
+
+  <script>
+    const PLATOS = [
+      { id:1,  nombre:'Bistec a la parrilla', descripcion:'Corte de res jugoso asado a fuego directo.', precio:20000, imagen:'https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=400&q=80', categoria:'carne' },
+      { id:2,  nombre:'Pasta Primavera',      descripcion:'Pasta fresca con vegetales y parmesano.',    precio:15000, imagen:'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=400&q=80', categoria:'pasta' },
+      { id:3,  nombre:'Caesar Salad',         descripcion:'Lechuga romana con pollo grillado.',          precio:12000, imagen:'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=400&q=80', categoria:'ensalada' },
+      { id:4,  nombre:'Cheeseburger',         descripcion:'Hamburguesa con cheddar y tomate.',           precio:10000, imagen:'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80', categoria:'rapida' },
+      { id:5,  nombre:'Pizza Margarita',      descripcion:'Pizza con tomate, mozzarella y albahaca.',    precio:18000, imagen:'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400&q=80', categoria:'pizza' },
+      { id:6,  nombre:'Tacos Mexicanos',      descripcion:'Tacos de carne con guacamole.',               precio:14000, imagen:'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=400&q=80', categoria:'rapida' },
+      { id:7,  nombre:'Sushi Roll',           descripcion:'Rollos con salmón y aguacate.',               precio:22000, imagen:'https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=400&q=80', categoria:'asiatica' },
+      { id:8,  nombre:'Pollo Asado',          descripcion:'Pollo jugoso al horno con especias.',         precio:16000, imagen:'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400&q=80', categoria:'carne' },
+      { id:9,  nombre:'Hot Dog',              descripcion:'Perro caliente con salsas y papas.',          precio:8000,  imagen:'https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&q=80', categoria:'rapida' },
+      { id:10, nombre:'Lasagna',              descripcion:'Lasaña de carne con queso gratinado.',        precio:17000, imagen:'https://images.unsplash.com/photo-1574894709920-11b28e7367e3?w=400&q=80', categoria:'pasta' },
+      { id:11, nombre:'Ensalada Griega',      descripcion:'Tomate, pepino, aceitunas y feta.',           precio:13000, imagen:'https://images.unsplash.com/photo-1529059997568-3d847b1154f0?w=400&q=80', categoria:'ensalada' },
+      { id:12, nombre:'Arroz con Pollo',      descripcion:'Arroz tradicional con pollo y verduras.',     precio:14000, imagen:'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&q=80', categoria:'tradicional' },
+      { id:13, nombre:'Costillas BBQ',        descripcion:'Costillas de cerdo con salsa BBQ.',           precio:21000, imagen:'https://images.unsplash.com/photo-1558030006-450675393462?w=400&q=80', categoria:'carne' },
+      { id:14, nombre:'Arepa con Queso',      descripcion:'Arepa caliente rellena de queso.',            precio:7000,  imagen:'https://images.unsplash.com/photo-1748955309169-920300e22eee?w=400&q=80', categoria:'tradicional' },
+      { id:15, nombre:'Empanadas',            descripcion:'Empanadas fritas rellenas de carne.',         precio:6000,  imagen:'https://images.unsplash.com/photo-1624128082323-beb6b8b508db?w=400&q=80', categoria:'rapida' },
+      { id:16, nombre:'Ceviche',              descripcion:'Pescado marinado en limón con cebolla.',      precio:19000, imagen:'https://images.unsplash.com/photo-1533658266890-8bd362930725?w=400&q=80', categoria:'mar' },
+      { id:17, nombre:'Pancakes',             descripcion:'Pancakes con miel y frutas.',                 precio:11000, imagen:'https://images.unsplash.com/photo-1528207776546-365bb710ee93?w=400&q=80', categoria:'desayuno' },
+      { id:18, nombre:'Waffles',              descripcion:'Waffles crujientes con chocolate.',           precio:12000, imagen:'https://images.unsplash.com/photo-1558584724-0e4d32ca55a4?w=400&q=80', categoria:'desayuno' },
+      { id:19, nombre:'Helado Artesanal',     descripcion:'Helado de vainilla y chocolate.',             precio:9000,  imagen:'https://images.unsplash.com/photo-1447195047884-0f014b0d9288?w=400&q=80', categoria:'postre' },
+      { id:20, nombre:'Brownie',              descripcion:'Brownie de chocolate con nueces.',            precio:8000,  imagen:'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=400&q=80', categoria:'postre' }
+    ];
+
+    const CATEGORIAS = ['todas','carne','pasta','ensalada','rapida','pizza','asiatica','tradicional','mar','desayuno','postre'];
+    let carrito = {}; // { id: cantidad }
+    let catActiva = 'todas';
+    let pagoSeleccionado = '';
+
+    // ===== RENDER MENÚ =====
+    function renderMenu() {
+      const filtrados = catActiva === 'todas' ? PLATOS : PLATOS.filter(p => p.categoria === catActiva);
+      const grid = document.getElementById('menu-grid');
+      grid.innerHTML = filtrados.map(p => `
+        <div class="menu-item">
+          <img src="${p.imagen}" alt="${p.nombre}" />
+          <div class="menu-item-body">
+            <h3>${p.nombre}</h3>
+            <p>${p.descripcion}</p>
+            <div class="menu-item-footer">
+              <span class="menu-item-price">$${p.precio.toLocaleString('es-CO')}</span>
+              <button class="btn-agregar ${carrito[p.id] ? 'en-carrito' : ''}"
+                onclick="agregarAlCarrito(${p.id})">
+                ${carrito[p.id] ? `✓ (${carrito[p.id]})` : '+ Agregar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ===== FILTROS =====
+    function renderFiltros() {
+      const bar = document.getElementById('filtros');
+      bar.innerHTML = CATEGORIAS.map(c => `
+        <button class="filter-btn ${c === catActiva ? 'active' : ''}"
+          onclick="cambiarCat('${c}')">
+          ${c.charAt(0).toUpperCase() + c.slice(1)}
+        </button>
+      `).join('');
+    }
+    function cambiarCat(cat) {
+      catActiva = cat;
+      renderFiltros();
+      renderMenu();
+    }
+
+    // ===== CARRITO =====
+    function agregarAlCarrito(id) {
+      carrito[id] = (carrito[id] || 0) + 1;
+      actualizarCarrito();
+      renderMenu();
+    }
+    function cambiarCantidad(id, delta) {
+      carrito[id] = (carrito[id] || 0) + delta;
+      if (carrito[id] <= 0) delete carrito[id];
+      actualizarCarrito();
+      renderMenu();
+    }
+    function quitarItem(id) {
+      delete carrito[id];
+      actualizarCarrito();
+      renderMenu();
+    }
+
+    function actualizarCarrito() {
+      const ids = Object.keys(carrito);
+      const vacio = document.getElementById('carrito-vacio');
+      const itemsEl = document.getElementById('carrito-items');
+      const subtotalEl = document.getElementById('carrito-subtotal');
+      const btnPedir = document.getElementById('btn-pedir');
+      const count = document.getElementById('carrito-count');
+
+      if (!ids.length) {
+        vacio.style.display = '';
+        itemsEl.style.display = 'none';
+        subtotalEl.style.display = 'none';
+        btnPedir.disabled = true;
+        count.textContent = '';
+        return;
+      }
+
+      vacio.style.display = 'none';
+      itemsEl.style.display = 'flex';
+      subtotalEl.style.display = '';
+      btnPedir.disabled = false;
+
+      let subtotal = 0;
+      itemsEl.innerHTML = ids.map(id => {
+        const plato = PLATOS.find(p => p.id == id);
+        const qty = carrito[id];
+        const sub = plato.precio * qty;
+        subtotal += sub;
+        return `
+          <div class="carrito-item">
+            <span class="carrito-item-nombre">${plato.nombre}</span>
+            <div class="carrito-item-controles">
+              <button class="qty-btn" onclick="cambiarCantidad(${id}, -1)">−</button>
+              <span class="qty-num">${qty}</span>
+              <button class="qty-btn" onclick="cambiarCantidad(${id}, 1)">+</button>
+              <span class="carrito-item-precio">$${sub.toLocaleString('es-CO')}</span>
+              <button class="carrito-btn-quitar" onclick="quitarItem(${id})" title="Quitar">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const total = subtotal;
+      document.getElementById('val-subtotal').textContent = '$' + subtotal.toLocaleString('es-CO');
+      document.getElementById('val-total').textContent = '$' + total.toLocaleString('es-CO');
+
+      const totalItems = ids.reduce((s, id) => s + carrito[id], 0);
+      count.textContent = `(${totalItems} ítem${totalItems !== 1 ? 's' : ''})`;
+    }
+
+    // ===== MODAL =====
+    function abrirModal() {
+      pagoSeleccionado = '';
+      const overlay = document.getElementById('modal-overlay');
+      overlay.classList.add('visible');
+      renderModalForm();
+    }
+    function cerrarModal() {
+      document.getElementById('modal-overlay').classList.remove('visible');
+    }
+
+    function renderModalForm() {
+      const ids = Object.keys(carrito);
+      let subtotal = 0;
+      const resumenItems = ids.map(id => {
+        const p = PLATOS.find(pl => pl.id == id);
+        const sub = p.precio * carrito[id];
+        subtotal += sub;
+        return `<div class="resumen-item"><span>${p.nombre} x${carrito[id]}</span><span>$${sub.toLocaleString('es-CO')}</span></div>`;
+      }).join('');
+
+      document.getElementById('modal-contenido').innerHTML = `
+        <h2>📦 Datos de envío y pago</h2>
+
+        <div class="resumen-pedido">
+          <h4>Resumen del pedido</h4>
+          ${resumenItems}
+          <div class="resumen-total">
+            <span>Total</span>
+            <span>$${subtotal.toLocaleString('es-CO')}</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" id="env-nombre" placeholder="Tu nombre" />
+          </div>
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="tel" id="env-tel" placeholder="Ej: 300 123 4567" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Dirección de entrega</label>
+          <input type="text" id="env-dir" placeholder="Calle, número, barrio..." />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ciudad</label>
+            <input type="text" id="env-ciudad" placeholder="Ciudad" />
+          </div>
+          <div class="form-group">
+            <label>Apartamento / piso (opcional)</label>
+            <input type="text" id="env-apto" placeholder="Apto 201" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Indicaciones adicionales</label>
+          <textarea id="env-nota" placeholder="Timbre roto, dejar con el vecino..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Método de pago</label>
+          <div class="pago-opciones">
+            <div class="pago-opcion" onclick="selPago('efectivo', this)">
+              <span class="pago-icon">💵</span>
+              Efectivo
+            </div>
+            <div class="pago-opcion" onclick="selPago('tarjeta', this)">
+              <span class="pago-icon">💳</span>
+              Tarjeta
+            </div>
+            <div class="pago-opcion" onclick="selPago('nequi', this)">
+              <span class="pago-icon">📱</span>
+              Nequi
+            </div>
+            <div class="pago-opcion" onclick="selPago('daviplata', this)">
+              <span class="pago-icon">🏦</span>
+              Daviplata
+            </div>
+          </div>
+          <p id="pago-error" style="color:#e74c3c;font-size:.8rem;margin-top:6px;display:none;">Selecciona un método de pago.</p>
+        </div>
+
+        <div class="modal-btns">
+          <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+          <button class="btn-confirmar" onclick="confirmarPedido()">Confirmar pedido 🛵</button>
+        </div>
+      `;
+    }
+
+    function selPago(metodo, el) {
+      pagoSeleccionado = metodo;
+      document.querySelectorAll('.pago-opcion').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('pago-error').style.display = 'none';
+    }
+
+    function confirmarPedido() {
+      const nombre  = document.getElementById('env-nombre').value.trim();
+      const tel     = document.getElementById('env-tel').value.trim();
+      const dir     = document.getElementById('env-dir').value.trim();
+      const ciudad  = document.getElementById('env-ciudad').value.trim();
+
+      if (!nombre || !tel || !dir || !ciudad) {
+        alert('Por favor completa los campos obligatorios: nombre, teléfono, dirección y ciudad.');
+        return;
+      }
+      if (!pagoSeleccionado) {
+        document.getElementById('pago-error').style.display = '';
+        return;
+      }
+
+      const numPedido = '#PAD-' + Math.floor(Math.random() * 90000 + 10000);
+
+      document.getElementById('modal-contenido').innerHTML = `
+        <div class="confirmacion-box">
+          <div class="confirmacion-icon">🎉</div>
+          <h2>¡Pedido confirmado!</h2>
+          <p>Gracias, <strong style="color:var(--texto)">${nombre}</strong>. Tu pedido está en camino.</p>
+          <p class="num-pedido">${numPedido}</p>
+          <p style="margin-top:8px;">Envío a: <strong style="color:var(--texto)">${dir}, ${ciudad}</strong></p>
+          <p>Pago: <strong style="color:var(--texto);text-transform:capitalize;">${pagoSeleccionado}</strong></p>
+          <p style="margin-top:12px;font-size:.82rem;">Tiempo estimado: <strong style="color:var(--naranja)">30–45 min</strong></p>
+          <button class="btn-nuevo-pedido" onclick="nuevoPedido()">Hacer otro pedido</button>
+        </div>
+      `;
+    }
+
+    function nuevoPedido() {
+      carrito = {};
+      actualizarCarrito();
+      renderMenu();
+      cerrarModal();
+    }
+
+    // Cerrar modal al click fuera
+    document.getElementById('modal-overlay').addEventListener('click', function(e) {
+      if (e.target === this) cerrarModal();
+    });
+
+    // ===== INIT =====
+    renderFiltros();
+    renderMenu();
+    actualizarCarrito();
+  </script>
+</body>
+</html>

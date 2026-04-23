@@ -5,66 +5,327 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Servicios - Peek a Dish</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .srv-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 600px) { .srv-grid { grid-template-columns: 1fr; } }
+
+    .srv-card {
+      background: var(--card);
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      display: block;
+    }
+    .srv-card:hover { border-color: var(--naranja); transform: translateY(-3px); }
+    .srv-card.featured { border: 2px solid var(--naranja); }
+
+    .srv-badge {
+      position: absolute;
+      top: 14px; right: 14px;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .badge-gratis  { background: rgba(76,175,80,.15); color: #4caf50; }
+    .badge-precio  { background: rgba(200,98,10,.15);  color: var(--naranja); }
+
+    .srv-icon-wrap {
+      width: 50px; height: 50px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+      font-size: 24px;
+    }
+    .icon-orange { background: rgba(200,98,10,.15); }
+    .icon-blue   { background: rgba(55,138,221,.12); }
+
+    .srv-card h3 {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin: 0 0 6px;
+      color: var(--texto);
+    }
+    .srv-card p {
+      font-size: .85rem;
+      color: var(--gris);
+      margin: 0 0 16px;
+      line-height: 1.6;
+    }
+    .srv-features {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 18px;
+    }
+    .srv-feat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .8rem;
+      color: var(--gris);
+    }
+    .feat-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-orange { background: var(--naranja); }
+    .dot-blue   { background: #378ADD; }
+
+    .srv-btn {
+      width: 100%;
+      padding: 10px;
+      font-size: .85rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid var(--borde);
+      background: transparent;
+      color: var(--gris);
+      font-family: Arial, sans-serif;
+      transition: background 0.15s, color 0.15s;
+    }
+    .srv-btn:hover { background: var(--borde); color: var(--texto); }
+    .srv-btn.primary {
+      background: var(--naranja);
+      color: #fff;
+      border-color: var(--naranja);
+    }
+    .srv-btn.primary:hover { background: #a85208; }
+
+    /* Cupones */
+    .cupon-wrap {
+      background: var(--card);
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      max-width: 100%;
+    }
+    .cupon-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .cupon-header h4 {
+      font-size: 1rem;
+      font-weight: bold;
+      margin: 0;
+      color: var(--texto);
+    }
+    .cupon-sub {
+      font-size: .83rem;
+      color: var(--gris);
+      margin: 0 0 14px;
+    }
+    .cupon-row {
+      display: flex;
+      gap: 8px;
+    }
+    .cupon-row input {
+      flex: 1;
+      padding: .65rem 1rem;
+      font-size: .9rem;
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      background: var(--fondo);
+      color: var(--texto);
+      font-family: Arial, sans-serif;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .cupon-row input:focus { border-color: var(--naranja); }
+    .cupon-row input::placeholder { color: var(--gris); }
+    .cupon-row button {
+      padding: .65rem 1.2rem;
+      font-size: .88rem;
+      font-weight: bold;
+      background: var(--naranja);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+      transition: background .15s;
+    }
+    .cupon-row button:hover { background: #a85208; }
+    .cupon-msg { font-size: .8rem; margin-top: 8px; min-height: 16px; }
+    .msg-ok  { color: #4caf50; }
+    .msg-err { color: #e74c3c; }
+
+    /* Resultado cupones */
+    .cupon-resultado { display: none; margin-top: 14px; }
+    .cupon-aplicado-label { font-size: .85rem; color: #4caf50; font-weight: bold; margin-bottom: 10px; }
+    .cupon-platos { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .cupon-plato-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      background: var(--fondo);
+      border-radius: 6px;
+      border: 1px solid var(--borde);
+      font-size: .82rem;
+    }
+    .cupon-plato-nombre { color: var(--texto); }
+    .cupon-plato-precios { display: flex; gap: .75rem; align-items: center; }
+    .precio-original { color: var(--gris); text-decoration: line-through; font-size: .78rem; }
+    .precio-final    { color: var(--naranja); font-weight: bold; }
+    .cupon-quitar-btn {
+      background: none;
+      border: 1px solid var(--borde);
+      color: var(--gris);
+      padding: .4rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .8rem;
+      font-family: Arial, sans-serif;
+    }
+    .cupon-quitar-btn:hover { border-color: var(--gris); color: var(--texto); }
+  </style>
 </head>
 <body>
   <nav class="navbar">
-    <a href="index.html" class="logo">Peek a Dish</a>
+    <a href="index.html" class="logo">🍽️ Peek a Dish</a>
     <ul class="nav-links" id="navLinks">
       <li><a href="index.html">Inicio</a></li>
       <li><a href="servicios.html" class="active">Servicios</a></li>
       <li><a href="registro.html">Registro</a></li>
+      <li><a href="login.html">Login</a></li>
     </ul>
   </nav>
 
   <div class="page">
-    <h2 class="section-title">Nuestros Servicios</h2>
-    <div class="servicios-lista">
+    <p class="section-title">Nuestros Servicios</p>
 
-      <div class="servicio-card">
-        <div class="servicio-icon">🛵</div>
-        <div class="servicio-info">
-          <h3>Domicilios</h3>
-          <p>Entrega de tus platos favoritos en casa.</p>
+    <div class="srv-grid">
+      <!-- Domicilios -->
+      <a href="domicilios.html" class="srv-card featured">
+        <span class="srv-badge badge-gratis">Gratis</span>
+        <div class="srv-icon-wrap icon-orange">🛵</div>
+        <h3>Domicilios</h3>
+        <p>Pide tus platos favoritos y los llevamos hasta tu puerta.</p>
+        <div class="srv-features">
+          <div class="srv-feat"><span class="feat-dot dot-orange"></span>Envío sin costo adicional</div>
+          <div class="srv-feat"><span class="feat-dot dot-orange"></span>Pago en efectivo, tarjeta o Nequi</div>
+          <div class="srv-feat"><span class="feat-dot dot-orange"></span>Entrega en 30–45 min</div>
         </div>
-        <span class="servicio-precio gratis">Free</span>
-      </div>
+        <button class="srv-btn primary">Pedir ahora →</button>
+      </a>
 
-      <div class="servicio-card">
-        <div class="servicio-icon">📅</div>
-        <div class="servicio-info">
-          <h3>Reservas</h3>
-          <p>Reserva una mesa en pocos pasos.</p>
+      <!-- Reservas -->
+      <a href="reservas.html" class="srv-card">
+        <span class="srv-badge badge-gratis">Gratis</span>
+        <div class="srv-icon-wrap icon-blue">📅</div>
+        <h3>Reservas</h3>
+        <p>Asegura tu mesa con antelación y disfruta sin esperas.</p>
+        <div class="srv-features">
+          <div class="srv-feat"><span class="feat-dot dot-blue"></span>Cancelación gratuita hasta 2h antes</div>
+          <div class="srv-feat"><span class="feat-dot dot-blue"></span>Elige zona y ocasión especial</div>
+          <div class="srv-feat"><span class="feat-dot dot-blue"></span>Confirmación inmediata</div>
         </div>
-        <span class="servicio-precio">$2.00</span>
-      </div>
-
+        <button class="srv-btn primary">Reservar mesa →</button>
+      </a>
     </div>
 
-    <!-- ===== SECCIÓN CUPONES ===== -->
-    <div class="cupon-section">
-      <div id="cupon-activo" class="cupon-activo" style="display:none;">
+    <!-- CUPONES -->
+    <div class="cupon-wrap">
+      <div class="cupon-header">
+        <span style="font-size:20px;">🎟️</span>
+        <h4>Cupones de descuento</h4>
+      </div>
+      <p class="cupon-sub">¿Tienes un código? Ingrésalo y ve los precios con descuento.</p>
+      <div class="cupon-row">
+        <input type="text" id="cupon-input" placeholder="Ej: PEEKA10" />
+        <button onclick="aplicarCupon()">Aplicar</button>
+      </div>
+      <p class="cupon-msg" id="cupon-mensaje"></p>
 
-        <h3 class="cupon-titulo">🎟️ Cupones — Obtén descuentos exclusivos</h3>
-        <p class="cupon-bienvenida">Ingresa tu código y ve los precios con descuento aplicado:</p>
-
-        <div class="cupon-input-row">
-          <input type="text" id="cupon-input" placeholder="Ej: PEEKA10" />
-          <button onclick="aplicarCupon()">Aplicar</button>
-        </div>
-        <p id="cupon-mensaje" class="cupon-mensaje"></p>
-
-        <div id="cupon-resultado" style="display:none;">
-          <p class="cupon-aplicado-label">✅ Cupón aplicado — <span id="cupon-pct"></span>% de descuento</p>
-          <div class="cupon-platos" id="cupon-platos-lista"></div>
-          <button class="cupon-quitar-btn" onclick="quitarCupon()">Quitar cupón</button>
-        </div>
-
+      <div class="cupon-resultado" id="cupon-resultado">
+        <p class="cupon-aplicado-label">✅ Cupón aplicado — <span id="cupon-pct"></span>% de descuento</p>
+        <div class="cupon-platos" id="cupon-platos-lista"></div>
+        <button class="cupon-quitar-btn" onclick="quitarCupon()">Quitar cupón</button>
       </div>
     </div>
-    <!-- ===== FIN CUPONES ===== -->
 
   </div>
 
   <script src="js/cupones.js"></script>
+  <script>
+    // Override para usar el nuevo HTML
+    const CUPONES_LOCAL = { 'PEEKA10': 10, 'BIENVENIDO': 15, 'VERANO20': 20 };
+    const PLATOS_LOCAL = [
+      { nombre: 'Bistec a la parrilla', precio: 20000 },
+      { nombre: 'Pasta Primavera',      precio: 15000 },
+      { nombre: 'Caesar Salad',         precio: 12000 },
+      { nombre: 'Cheeseburger',         precio: 10000 },
+      { nombre: 'Pizza Margarita',      precio: 18000 },
+      { nombre: 'Tacos Mexicanos',      precio: 14000 },
+      { nombre: 'Sushi Roll',           precio: 22000 },
+      { nombre: 'Pollo Asado',          precio: 16000 },
+      { nombre: 'Hot Dog',              precio:  8000 },
+      { nombre: 'Lasagna',              precio: 17000 },
+    ];
+
+    function aplicarCupon() {
+      const codigo = document.getElementById('cupon-input').value.trim().toUpperCase();
+      const msg    = document.getElementById('cupon-mensaje');
+      const res    = document.getElementById('cupon-resultado');
+
+      if (!codigo) {
+        msg.className = 'cupon-msg msg-err';
+        msg.textContent = 'Ingresa un código primero.';
+        return;
+      }
+      if (!CUPONES_LOCAL[codigo]) {
+        msg.className = 'cupon-msg msg-err';
+        msg.textContent = 'Código inválido. Prueba: PEEKA10, BIENVENIDO o VERANO20.';
+        res.style.display = 'none';
+        return;
+      }
+
+      const pct = CUPONES_LOCAL[codigo];
+      msg.className = 'cupon-msg msg-ok';
+      msg.textContent = '';
+      document.getElementById('cupon-pct').textContent = pct;
+
+      const lista = document.getElementById('cupon-platos-lista');
+      lista.innerHTML = PLATOS_LOCAL.map(p => {
+        const final = Math.round(p.precio * (1 - pct / 100));
+        return `
+          <div class="cupon-plato-row">
+            <span class="cupon-plato-nombre">${p.nombre}</span>
+            <span class="cupon-plato-precios">
+              <span class="precio-original">$${p.precio.toLocaleString('es-CO')}</span>
+              <span class="precio-final">$${final.toLocaleString('es-CO')}</span>
+            </span>
+          </div>
+        `;
+      }).join('');
+
+      res.style.display = 'block';
+    }
+
+    function quitarCupon() {
+      document.getElementById('cupon-resultado').style.display = 'none';
+      document.getElementById('cupon-input').value = '';
+      document.getElementById('cupon-mensaje').textContent = '';
+    }
+
+    document.getElementById('cupon-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') aplicarCupon();
+    });
+  </script>
 </body>
 </html>
